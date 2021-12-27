@@ -6,36 +6,42 @@ from __skills__ import *
 
 class RandomDataGenerator():
 
-    def __init__(self, size: int) -> None:
+    def __init__(self, size: int, seed:int=None) -> None:
         if size <= 0: raise ValueError()
 
         self.size = size
+        self.seed = seed
 
     def generate_ids(self) -> list[str]:
         """
         Generates random ids as nicknames/pseudonyms
         """
+
+        self.rd = rd.Random(self.seed)
         
-        ids = set()
+        _ids, ids = set(), list()
 
         if self.size <= 0:
             return []
 
-        while len(ids) < self.size:
-            word1 = WORDS[rd.randrange(0, len(WORDS))]
-            word2 = WORDS[rd.randrange(0, len(WORDS))]
+        while len(_ids) < self.size:
+            word1 = WORDS[self.rd.randint(0, len(WORDS)-1)]
+            word2 = WORDS[self.rd.randint(0, len(WORDS)-1)]
             id = word1 + word2
 
-            if id not in ids:
-                ids.add(id)
+            if id not in _ids:
+                _ids.add(id)
+                ids.append(id)
         
-        return list(ids)
+        return ids
 
     def generate_skills(self) -> list[str]:
         """
         Generates rows filled with random data. 
         Each row is assigned a job role and gets random values for each skill
         """
+
+        self.rd = rd.Random(self.seed)
 
         default_dict = { k:0 for k in COLUMNS}
         rows = []
@@ -44,18 +50,18 @@ class RandomDataGenerator():
             row = default_dict.copy()
 
             # assign Role - Tech or No Tech Role
-            irole = rd.randrange(0, len(TECH_ROLES) + len(OTHER_ROLES))
+            irole = self.rd.randint(0, len(TECH_ROLES) + len(OTHER_ROLES)-1)
             role = TECH_ROLES[irole] if irole < len(TECH_ROLES) else OTHER_ROLES[irole-len(TECH_ROLES)]
             row[role] = 1
             
             # if Tech Role, set Programming and Systems skills
             if irole < len(TECH_ROLES):
                 for p in PROGRAMMING + SYSTEMS:
-                    row[p] = rd.randrange(0,100)
+                    row[p] = self.rd.randint(0,100)
             
             # Any Role, set Languages and Other skills
             for s in LANGUAGES + OTHER:
-                row[s] = rd.randrange(0,100)
+                row[s] = self.rd.randint(0,100)
 
             rows.append(row)
         
@@ -66,13 +72,15 @@ class RandomDataGenerator():
         Generates a random Database of the size specified
         """
 
+        self.rd = rd.Random(self.seed)
+
         ids = self.generate_ids()
         skills = self.generate_skills()
 
         db = []
 
         for id in ids:
-            _skills = skills.pop(rd.randrange(0, len(skills)))
+            _skills = skills.pop(self.rd.randint(0, len(skills)-1))
             db.append((id,_skills))
 
         return db
@@ -84,15 +92,16 @@ if __name__ == '__main__':
             raise Exception()
 
         SIZE = int(sys.argv[1])
-        
-        if len(sys.argv) >= 3:
-            rd.seed(int(sys.argv[2]))
+        SEED = None
 
+        if len(sys.argv) >= 3:
+            SEED = int(sys.argv[2])
+        
     except Exception as e:
         print("""Usage: generator.py size:int [seed:int]""")
         exit(1)
 
-    generator = RandomDataGenerator(SIZE)
+    generator = RandomDataGenerator(SIZE, SEED)
     db = generator.generate_database()
 
     dt = pd.DataFrame(columns=["id"] + COLUMNS)
