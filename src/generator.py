@@ -67,6 +67,25 @@ class RandomDataGenerator():
         
         return rows
 
+    def generate_connections(self, ids:list[str], prob:int=0.01) -> dict:
+        """
+        Generates random connections between pairs of individuals with probability prob
+        """
+
+        self.rd = rd.Random(self.seed)
+
+        connections = { id:{} for id in ids }
+
+        for id1 in ids:
+            for id2 in ids:
+                if id1 != id2 and id2 not in connections[id1]:
+                    if rd.randint(1,100)/100.0 <= prob:
+                        weight = rd.randint(0,10)
+                        connections[id1][id2] = weight
+                        connections[id2][id1] = weight
+
+        return connections
+
     def generate_database(self) -> list[tuple]:
         """
         Generates a random Database of the size specified
@@ -76,12 +95,14 @@ class RandomDataGenerator():
 
         ids = self.generate_ids()
         skills = self.generate_skills()
+        connections = self.generate_connections(ids)
 
         db = []
 
         for id in ids:
             _skills = skills.pop(self.rd.randint(0, len(skills)-1))
-            db.append((id,_skills))
+            _connections = connections[id]
+            db.append((id, _skills, _connections))
 
         return db
 
@@ -104,11 +125,23 @@ if __name__ == '__main__':
     generator = RandomDataGenerator(SIZE, SEED)
     db = generator.generate_database()
 
-    dt = pd.DataFrame(columns=["id"] + COLUMNS)
+    dt_skills = pd.DataFrame(columns=["id"] + COLUMNS)
+    dt_connections = pd.DataFrame(columns=["id"] + [id for id,_,_ in db])
+    
+    i = 0
 
-    for id,skills in db:
-        row = {"id":id}
-        row.update(skills)
-        dt = dt.append(row, ignore_index=True)
+    for id,skills,connections in db:
+        row_skills = {"id":id}
+        row_connections = {"id":id}
+        
+        row_skills.update(skills)
+        dt_skills = dt_skills.append(row_skills, ignore_index=True)
 
-    dt.to_csv("./out.csv", index=False)
+        row_connections.update(connections)
+        dt_connections = dt_connections.append(row_connections, ignore_index=True)
+        
+        i += 1
+        print(f"Progress: {i}/{SIZE}" + " "*10, end="\r")
+
+    dt_skills.to_csv("./skills.csv", index=False)
+    dt_connections.to_csv("./connections.csv", index=False)

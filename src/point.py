@@ -1,8 +1,9 @@
 class Point():
 
-    def __init__(self, id:str, coordinates:dict[str:int]) -> None:
+    def __init__(self, id:str, coordinates:dict[str:int], connections) -> None:
         self.id = id
         self.coordinates = coordinates
+        self.connections = connections
 
     def __hash__(self) -> int:
         return hash(self.id)
@@ -15,3 +16,6 @@ class Point():
 
     def __sizeof__(self) -> int:
         return len(self.coordinates)
+
+    def __getitem__(self, __name: str) -> int:
+        return self.coordinates[__name]
