@@ -22,6 +22,8 @@ class KDTree():
         self.points = points
         self.axes = axes
         self.root = self.__build(self.points)
+        self.search_result = []
+        self.search_steps = 0
 
     def __build(self, points:list, depth:int = 0) -> 'KDTreeNode':
 
@@ -50,3 +52,48 @@ class KDTree():
             self.bfs_print(node.right_child, k + 1)
             print(' ' * ((len(self.axes) * 4 + 5) * k) + '--| ' + str([node[a] for a in self.axes]))
             self.bfs_print(node.left_child, k + 1)
+
+
+
+    def bfs_search(self, node: 'KDTreeNode', ranges, step=0):
+        self.search_steps += 1
+        if step == len(self.axes):
+            step = 0
+
+        if node == None:
+            return self.search_result
+        else:
+            canAdded = True
+            for i in range(len(ranges)):
+                if len(ranges[i]) > 0:
+                    min, max = int(ranges[i].split('|')[0]), int(ranges[i].split('|')[1])
+                    if min > node.point[self.axes[i]] or node.point[self.axes[i]] > max:
+                        canAdded = False
+                        break
+            if canAdded:
+                self.search_result.append(node)
+
+            if len(ranges[step]) > 0:
+                min, max = int(ranges[step].split('|')[0]), int(ranges[step].split('|')[1])
+                if min <= node.point[self.axes[step]] and node.point[self.axes[step]] <= max:
+                    if node.left_child != None:
+                        step+=1
+                        self.search_result.extend(self.bfs_search(node.left_child, ranges, step))
+                    if node.right_child != None:
+                        step+=1
+                        self.search_result.extend(self.bfs_search(node.right_child, ranges, step))
+
+                elif min > node.point[self.axes[step]]:
+                    step+=1
+                    self.search_result.extend(self.bfs_search(node.right_child, ranges, step))
+                elif max < node.point[self.axes[step]]:
+                    step+=1
+                    self.search_result.extend(self.bfs_search(node.left_child, ranges, step))
+            else:
+                step+=1
+                if node.left_child != None:
+                    self.search_result.extend(self.bfs_search(node.left_child, ranges, step))
+                if node.right_child != None:
+                    self.search_result.extend(self.bfs_search(node.right_child, ranges, step))
+
+        return list(set(self.search_result))

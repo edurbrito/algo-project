@@ -1,6 +1,6 @@
 class Point():
 
-    def __init__(self, id:str, coordinates:dict[str:int], connections) -> None:
+    def __init__(self, id:str, coordinates, connections) -> None:
         self.id = id
         self.coordinates = coordinates
         self.connections = connections

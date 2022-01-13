@@ -12,7 +12,7 @@ class RandomDataGenerator():
         self.size = size
         self.seed = seed
 
-    def generate_ids(self) -> list[str]:
+    def generate_ids(self):
         """
         Generates random ids as nicknames/pseudonyms
         """
@@ -35,7 +35,7 @@ class RandomDataGenerator():
         
         return ids
 
-    def generate_skills(self) -> list[str]:
+    def generate_skills(self):
         """
         Generates rows filled with random data. 
         Each row is assigned a job role and gets random values for each skill
@@ -67,7 +67,7 @@ class RandomDataGenerator():
         
         return rows
 
-    def generate_connections(self, ids:list[str], prob:int=0.01) -> dict:
+    def generate_connections(self, ids, prob:int=0.01) -> dict:
         """
         Generates random connections between pairs of individuals with probability prob
         """
@@ -86,7 +86,7 @@ class RandomDataGenerator():
 
         return connections
 
-    def generate_database(self) -> list[tuple]:
+    def generate_database(self):
         """
         Generates a random Database of the size specified
         """
