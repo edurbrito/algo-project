@@ -6,7 +6,7 @@ from generator import RandomDataGenerator
 from point import Point
 from kdtree import KDTree
 
-generator = RandomDataGenerator(10)
+generator = RandomDataGenerator(31)
 db = generator.generate_database()
 
 points = {}
@@ -29,14 +29,15 @@ kdtree = KDTree(
 
 kdtree.bfs_print(kdtree.root)
 
-res = kdtree.bfs_search(kdtree.root, ranges=['10|60', '', '10|40', ''])
+print('Going throw the following nodes while searching the ranges...')
+res = kdtree.bfs_search(kdtree.root, ranges=['10|60', '0|30', '10|40', ''])
+print('--------------------------------------------------------------\n')
 
-
+print('Finding the following nodes in ranges...')
 for item in res:
     # print()
-    for ax in axes:
-        print(item.point.coordinates[ax], end=' ')
-    
-    print('\n')
+    print(str([item.point.coordinates[a] for a in kdtree.axes]))
+    # for ax in axes:
+    #     print(item.point.coordinates[ax], end=' ')
 
-print(kdtree.steps)
+print(kdtree.search_steps)

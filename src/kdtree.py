@@ -56,13 +56,15 @@ class KDTree():
 
 
     def bfs_search(self, node: 'KDTreeNode', ranges, step=0):
-        self.search_steps += 1
+        
         if step == len(self.axes):
             step = 0
 
         if node == None:
-            return self.search_result
+            return []#self.search_result
         else:
+            self.search_steps += 1
+            print(str([node[a] for a in self.axes]))
             canAdded = True
             for i in range(len(ranges)):
                 if len(ranges[i]) > 0:
