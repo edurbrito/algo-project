@@ -19,3 +19,6 @@ class Point():
 
     def __getitem__(self, __name: str) -> int:
         return self.coordinates[__name]
+
+    def in_range(self, axis, range):
+        return range[0] <= self[axis] <= range[1]
