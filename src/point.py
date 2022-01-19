@@ -1,6 +1,6 @@
 class Point():
 
-    def __init__(self, id:str, coordinates:dict[str:int], connections) -> None:
+    def __init__(self, id:str, coordinates, connections) -> None:
         self.id = id
         self.coordinates = coordinates
         self.connections = connections
@@ -19,3 +19,6 @@ class Point():
 
     def __getitem__(self, __name: str) -> int:
         return self.coordinates[__name]
+
+    def in_range(self, axis, range):
+        return range[0] <= self[axis] <= range[1]
