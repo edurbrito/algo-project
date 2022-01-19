@@ -3,8 +3,9 @@ from point import Point
 from kdtree import KDTree
 from time import perf_counter
 from random import randint
+import pandas as pd
 
-generator = RandomDataGenerator(1000, 111)
+generator = RandomDataGenerator(10000, 111)
 db = generator.generate_database()
 
 points = {}
@@ -19,68 +20,86 @@ axes = [
         "Communication",
         "Agile",
         "Laravel",
-        "Photoshop"
+        "Photoshop",
+        "Management",
+        "Django",
+        "Kubernetes",
+        "Team working"
     ]
 
-kdtree = KDTree(
-    points = list(points.values()), 
-    axes = axes
-)
+dt = pd.DataFrame(columns=["points", "axes", "speedup"])
 
-tests_passed = 0
-total = 200
-times = {"bs": [], "ln": []}
+for _lpoints in [100, 500, 1000, 5000, 10000]:
+    for _laxes in [2,4,6,8,10]:
 
-for _ in range(total):
+        _points = list(points.values())[:_lpoints]
+        axes = axes[:_laxes]
 
-    print('--------------------------------------------------------------')
+        build_start = perf_counter()
+        kdtree = KDTree(
+            points = _points, 
+            axes = axes
+        )
+        build_time = perf_counter() - build_start
 
-    ranges = []
+        tests_passed = 0
+        total = 20
+        times = {"bs": [], "ln": []}
 
-    for i in range(len(axes)):
-        a, b = 0, 0
-        while a == b:
-            a = randint(0,100)
-            b = randint(0,100)
-        
-        if randint(0,5) >= 2:
-            ranges.append((min(a,b), max(a,b)))
-        else:
-            ranges.append(None)
+        for _ in range(total):
 
-    bs_start = perf_counter()
-    res_bs = kdtree.range_search(kdtree.root, ranges=ranges)
-    bs_time = perf_counter() - bs_start
+            # print('--------------------------------------------------------------')
 
-    ln_start = perf_counter()
-    res_ln = kdtree.linear_search(ranges=ranges)
-    ln_time = perf_counter() - ln_start
+            ranges = []
 
-    _res_bs = []
+            for i in range(len(axes)):
+                a, b = 0, 0
+                while a == b:
+                    a = randint(0,100)
+                    b = randint(0,100)
+                
+                if randint(0,5) >= 2:
+                    ranges.append((min(a,b), max(a,b)))
+                else:
+                    ranges.append(None)
 
-    for item in res_bs:
-        _res_bs.append([item.point.coordinates[a] for a in kdtree.axes])
+            bs_start = perf_counter()
+            res_bs = kdtree.range_search(kdtree.root, ranges=ranges)
+            bs_time = perf_counter() - bs_start
 
-    _res_bs.sort()
+            ln_start = perf_counter()
+            res_ln = kdtree.linear_search(ranges=ranges)
+            ln_time = perf_counter() - ln_start
 
-    _res_ln = []
+            _res_bs = []
 
-    for item in res_ln:
-        _res_ln.append([item.coordinates[a] for a in kdtree.axes])
+            for item in res_bs:
+                _res_bs.append([item.point.coordinates[a] for a in kdtree.axes])
 
-    _res_ln.sort()
+            _res_bs.sort()
 
-    _test_passed = _res_bs == _res_ln
+            _res_ln = []
 
-    print(f"Test Passed: {_test_passed}")
-    print(f"Ranges: {ranges}")
-    print(f"BS: {bs_time} s")
-    print(f"LN: {ln_time} s")
+            for item in res_ln:
+                _res_ln.append([item.coordinates[a] for a in kdtree.axes])
 
-    tests_passed += int(_test_passed)
-    times["bs"].append(bs_time)
-    times["ln"].append(ln_time)
+            _res_ln.sort()
 
-speedup = sum(times["ln"]) / sum(times["bs"])
-print(f"\nTests Passed: {tests_passed}/{total}")
-print(f"Speedup: {speedup}")
+            _test_passed = _res_bs == _res_ln
+
+            # print(f"Test Passed: {_test_passed}")
+            # print(f"Ranges: {ranges}")
+            # print(f"BS: {bs_time} s")
+            # print(f"LN: {ln_time} s")
+
+            tests_passed += int(_test_passed)
+            times["bs"].append(bs_time)
+            times["ln"].append(ln_time)
+
+        speedup = sum(times["ln"]) / (sum(times["bs"]) + build_time)
+        print(f"\nTests Passed: {tests_passed}/{total}")
+        print(f"Points: {_lpoints}, Axes: {_laxes}")
+        print(f"Speedup: {speedup}")
+        dt = dt.append({"points": _lpoints, "axes": _laxes, "speedup": speedup}, ignore_index=True)
+
+dt.to_csv("speedup.csv")
