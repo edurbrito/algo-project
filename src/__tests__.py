@@ -5,15 +5,18 @@ from time import perf_counter
 from random import randint
 import pandas as pd
 
+# Generate Random Database of Employees with 10000 points
 generator = RandomDataGenerator(10000, 111)
 db = generator.generate_database()
 
 points = {}
 
+# Create the Points objects
 for id, skills, connections in db:
     p = Point(id, skills, connections)
     points[id] = p
 
+# Choose the axes to search with
 axes = [   
         "English", 
         "Python",
@@ -27,15 +30,19 @@ axes = [
         "Team working"
     ]
 
+# Create a DataFrame to store the speedup measurements
 dt = pd.DataFrame(columns=["points", "axes", "speedup"])
 
+# Build KDTrees of Multiple Sizes
 for _lpoints in [100, 500, 1000, 5000, 10000]:
+    # Search with multiple combinations of axes
     for _laxes in [2,4,6,8,10]:
 
         _points = list(points.values())[:_lpoints]
         axes = axes[:_laxes]
 
         build_start = perf_counter()
+        # Build the KDTree
         kdtree = KDTree(
             points = _points, 
             axes = axes
@@ -43,6 +50,7 @@ for _lpoints in [100, 500, 1000, 5000, 10000]:
         build_time = perf_counter() - build_start
 
         tests_passed = 0
+        # Set the number of successive queries
         total = 20
         times = {"bs": [], "ln": []}
 
@@ -64,10 +72,12 @@ for _lpoints in [100, 500, 1000, 5000, 10000]:
                     ranges.append(None)
 
             bs_start = perf_counter()
+            # Perform range search
             res_bs = kdtree.range_search(kdtree.root, ranges=ranges)
             bs_time = perf_counter() - bs_start
 
             ln_start = perf_counter()
+            # Perform linear search
             res_ln = kdtree.linear_search(ranges=ranges)
             ln_time = perf_counter() - ln_start
 

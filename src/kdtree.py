@@ -28,6 +28,9 @@ class KDTree():
         self.root = self.__build(self.points)
 
     def __build(self, points: list, depth: int = 0) -> 'KDTreeNode':
+        """
+        Build the KDTree based on the specified axes and return the root node
+        """
 
         if not points:
             return None
@@ -50,6 +53,10 @@ class KDTree():
         return node
 
     def bfs_print(self, node, k=0):
+        """
+        Print the KDTree in a BFS fashion
+        """
+
         if node:
             self.bfs_print(node.right_child, k + 1)
             print(' ' * ((len(self.axes) * 4 + 5) * k) +
@@ -57,7 +64,10 @@ class KDTree():
             self.bfs_print(node.left_child, k + 1)
 
     def range_search(self, node: 'KDTreeNode', ranges: list, level=0) -> list:
-
+        """
+        Range Search through the list of points and return the points that fit
+        """
+        
         if not node:
             return []
         else:
@@ -94,7 +104,11 @@ class KDTree():
                         self.range_search(node.right_child, ranges, level+1))
         return result
 
-    def linear_search(self, ranges):
+    def linear_search(self, ranges: list) -> list:
+        """
+        Linear Search through the list of points and return the points that fit
+        """
+
         _len = len(ranges)
         result = []
 
